@@ -8,7 +8,7 @@
 
 `npm install`
 or
-`yarn add`
+`yarn`
 
 ## Third. Usage
 
