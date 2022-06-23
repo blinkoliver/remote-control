@@ -72,22 +72,30 @@ export const actions: any = {
     robot.mouseToggle("up");
     ws.send(`draw_square_with${x}px_length\0`);
   },
-  prnt_scrn: (ws: any) => {
-    var size = 200;
+  prnt_scrn: async (ws: any) => {
     const mousePos = robot.getMousePos();
-    const screenCapture = robot.screen.capture(
-      mousePos.x,
-      mousePos.y,
-      size,
-      size
+    const size = 200;
+    const screenCaptureBitmap = robot.screen.capture(
+      mousePos.x - size,
+      mousePos.y - size,
+      size * 2,
+      size * 2
     );
-    const redDot =
-      "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
-    // ws.send(`prnt_scrn ${screenCapture.image.toString("base64")}\0`);
-    // const test = Jimp.read(screenCapture.image);
-    // console.log(test);
-
-    ws.send(`prnt_scrn ${redDot}\0`);
+    // const img = new Jimp(screenCaptureBitmap.width, screenCaptureBitmap.height);
+    const img = new Jimp(size * 2, size * 2, (err: any, img: any) => {
+      if (err) {
+        ws.send(`out_of_range\0`);
+      }
+    });
+    let pos = 0;
+    img.scan(0, 0, img.bitmap.width, img.bitmap.height, (x, y, idx) => {
+      img.bitmap.data[idx + 2] = screenCaptureBitmap.image.readUInt8(pos++);
+      img.bitmap.data[idx + 1] = screenCaptureBitmap.image.readUInt8(pos++);
+      img.bitmap.data[idx + 0] = screenCaptureBitmap.image.readUInt8(pos++);
+      img.bitmap.data[idx + 3] = screenCaptureBitmap.image.readUInt8(pos++);
+    });
+    const base64 = await img.getBase64Async(img.getMIME());
+    ws.send(`prnt_scrn ${base64.replace("data:image/png;base64,", "")}\0`);
     ws.send(`prnt_scrn\0`);
   },
 };
