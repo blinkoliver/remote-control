@@ -2,31 +2,31 @@ import robot from "robotjs";
 import Jimp from "jimp";
 
 export const actions: any = {
-  mouse_up: (y: number, ws: any): void => {
+  mouse_up: (y: number): string => {
     const mousePos = robot.getMousePos();
     robot.moveMouseSmooth(mousePos.x, mousePos.y - y);
-    ws.send(`mouse_up_to${y}px\0`);
+    return `mouse_up_to${y}px\0`;
   },
-  mouse_down: (y: number, ws: any): void => {
+  mouse_down: (y: number): string => {
     const mousePos = robot.getMousePos();
     robot.moveMouseSmooth(mousePos.x, mousePos.y + y);
-    ws.send(`mouse_down_to${y}px\0`);
+    return `mouse_down_to${y}px\0`;
   },
-  mouse_left: (x: number, ws: any): void => {
+  mouse_left: (x: number): string => {
     const mousePos = robot.getMousePos();
     robot.moveMouseSmooth(mousePos.x - x, mousePos.y);
-    ws.send(`mouse_left_to${x}px\0`);
+    return `mouse_left_to${x}px\0`;
   },
-  mouse_right: (x: number, ws: any): void => {
+  mouse_right: (x: number): string => {
     const mousePos = robot.getMousePos();
     robot.moveMouseSmooth(mousePos.x + x, mousePos.y);
-    ws.send(`mouse_right_to${x}px\0`);
+    return `mouse_right_to${x}px\0`;
   },
-  mouse_position: (ws: any): void => {
+  mouse_position: (): string => {
     const mousePos = robot.getMousePos();
-    ws.send(`mouse_position ${mousePos.x}px,${mousePos.y}px\0`);
+    return `mouse_position ${mousePos.x}px,${mousePos.y}px\0`;
   },
-  draw_circle: (r: number, ws: any): void => {
+  draw_circle: (r: number): string => {
     const mousePos = robot.getMousePos();
     robot.setMouseDelay(10);
     for (let i = 0; i <= Math.PI * 2; i += 0.01) {
@@ -36,9 +36,9 @@ export const actions: any = {
       robot.dragMouse(x, y);
     }
     robot.mouseToggle("up");
-    ws.send(`draw_circle_with${r}px_radius\0`);
+    return `draw_circle_with${r}px_radius\0`;
   },
-  draw_rectangle: (x: number, y: number, ws: any): void => {
+  draw_rectangle: (x: number, y: number): string => {
     const mousePos = robot.getMousePos();
     const rectangle = [
       { x: mousePos.x + x, y: mousePos.y },
@@ -53,9 +53,9 @@ export const actions: any = {
       robot.dragMouse(el.x, el.y);
     });
     robot.mouseToggle("up");
-    ws.send(`draw_rectangle_with${x}_and${y}px_length\0`);
+    return `draw_rectangle_with${x}_and${y}px_length\0`;
   },
-  draw_square: (x: number, ws: any): void => {
+  draw_square: (x: number): string => {
     const mousePos = robot.getMousePos();
     const square = [
       { x: mousePos.x + x, y: mousePos.y },
@@ -70,9 +70,9 @@ export const actions: any = {
       robot.dragMouse(el.x, el.y);
     });
     robot.mouseToggle("up");
-    ws.send(`draw_square_with${x}px_length\0`);
+    return `draw_square_with${x}px_length\0`;
   },
-  prnt_scrn: async (ws: any) => {
+  prnt_scrn: async () => {
     const mousePos = robot.getMousePos();
     const size = 200;
     const screenCaptureBitmap = robot.screen.capture(
@@ -81,10 +81,9 @@ export const actions: any = {
       size * 2,
       size * 2
     );
-    // const img = new Jimp(screenCaptureBitmap.width, screenCaptureBitmap.height);
     const img = new Jimp(size * 2, size * 2, (err: any, img: any) => {
       if (err) {
-        ws.send(`out_of_range\0`);
+        return `out_of_range\0`;
       }
     });
     let pos = 0;
@@ -95,7 +94,6 @@ export const actions: any = {
       img.bitmap.data[idx + 3] = screenCaptureBitmap.image.readUInt8(pos++);
     });
     const base64 = await img.getBase64Async(img.getMIME());
-    ws.send(`prnt_scrn ${base64.replace("data:image/png;base64,", "")}\0`);
-    ws.send(`prnt_scrn\0`);
+    return `prnt_scrn ${base64.replace("data:image/png;base64,", "")}\0`;
   },
 };
